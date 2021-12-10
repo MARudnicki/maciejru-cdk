@@ -5,12 +5,15 @@ phases:
     commands:
       - npm install -g npm
       - npm install
+      - npm run test
       - echo "test install"
+      - find .
   build:
     commands:
       - npm run build
       - npm run cdk -- synth
-      - echo "test build"
+      - echo "test build
+      - find .
 
 artifacts:
   base-directory: cdk.out
