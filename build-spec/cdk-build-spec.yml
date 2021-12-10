@@ -11,6 +11,6 @@ phases:
         - npm run cdk -- synth
 
 artifacts:
-  base-directory: cdk.out
+  base-directory: cdk.out/
   files:
     - '**/*'

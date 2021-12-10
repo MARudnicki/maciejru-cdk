@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import {MaciejruCdkStack} from '../lib/maciejru-cdk-stack';
-import {BillingStack} from "./biling-stack";
+import {BillingStack} from "../lib/biling-stack";
 import {App} from "@aws-cdk/core";
+import {PipelineStack} from "../lib/pipeline-stack";
 
 const app = new App();
-new MaciejruCdkStack(app, 'MaciejruCdkStack', {
+new PipelineStack(app, 'MaciejruCdkStack', {
     /* If you don't specify 'env', this stack will be environment-agnostic.
      * Account/Region-dependent features and context lookups will not work,
      * but a single synthesized template can be deployed anywhere. */

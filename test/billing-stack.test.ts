@@ -1,4 +1,4 @@
-import {BillingStack} from "../bin/biling-stack";
+import {BillingStack} from "../lib/biling-stack";
 import {SynthUtils} from "@aws-cdk/assert";
 import {App} from "@aws-cdk/core";
 
