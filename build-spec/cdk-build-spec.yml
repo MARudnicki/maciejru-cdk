@@ -9,6 +9,7 @@ phases:
       commans:
         - npm run build
         - npm run cdk -- synth
+        - find .
 
 artifacts:
   base-directory: cdk.out/
