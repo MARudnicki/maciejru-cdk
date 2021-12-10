@@ -1,6 +1,6 @@
-import { Stack, StackProps } from 'aws-cdk-lib';
-import { Construct } from 'constructs';
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
+
+import {Construct, Stack, StackProps} from "@aws-cdk/core";
 
 export class MaciejruCdkStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
