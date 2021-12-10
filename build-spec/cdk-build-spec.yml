@@ -1,17 +1,18 @@
 version: 0.2
 
 phases:
-    install:
-      commands:
-        - npm install -g npm
-        - npm install
-    build:
-      commans:
-        - npm run build
-        - npm run cdk -- synth
-        - find .
+  install:
+    commands:
+      - npm install -g npm
+      - npm install
+      - echo "test install"
+  build:
+    commands:
+      - npm run build
+      - npm run cdk -- synth
+      - echo "test build"
 
 artifacts:
-  base-directory: cdk.out/
+  base-directory: cdk.out
   files:
     - '**/*'
