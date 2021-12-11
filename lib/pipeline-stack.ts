@@ -14,7 +14,8 @@ export class PipelineStack extends Stack {
 
         const pipeline = new Pipeline(this, 'Pipeline', {
             pipelineName: 'MyPipeline',
-            crossAccountKeys: false
+            crossAccountKeys: false,
+            restartExecutionOnUpdate: true
         })
 
         const cdkSourceOutput = new Artifact('CdkSourceOutput')
@@ -58,7 +59,7 @@ export class PipelineStack extends Stack {
                         environment: {
                             buildImage: LinuxBuildImage.STANDARD_5_0
                         },
-                        buildSpec: BuildSpec.fromSourceFilename('build-specs/cdk-build-specs.yml')
+                        buildSpec: BuildSpec.fromSourceFilename('build-spec/cdk-build-spec.yml')
                     })
                 }),
                 new CodeBuildAction({
@@ -69,7 +70,7 @@ export class PipelineStack extends Stack {
                         environment: {
                             buildImage: LinuxBuildImage.STANDARD_5_0
                         },
-                        buildSpec: BuildSpec.fromSourceFilename('build-specs/lambda-build-specs.yml')
+                        buildSpec: BuildSpec.fromSourceFilename('build-spec/lambda-build-spec.yml')
                     })
                 })
             ]
