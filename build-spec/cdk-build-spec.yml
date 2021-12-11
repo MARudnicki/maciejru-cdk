@@ -3,17 +3,17 @@ version: 0.2
 phases:
   install:
     commands:
+      - echo "test install"
       - npm install -g npm
       - npm install
-      - echo "test install"
-      - find .
+      - find . | grep -v node_modules
   build:
     commands:
+      - echo "test build"
       - npm run build
       - npm run test
       - npm run cdk -- synth
-      - echo "test build"
-      - find .
+      - find . | grep -v node_modules
 
 artifacts:
   base-directory: cdk.out

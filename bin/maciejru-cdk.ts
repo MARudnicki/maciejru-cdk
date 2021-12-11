@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
-import {MaciejruCdkStack} from '../lib/maciejru-cdk-stack';
 import {BillingStack} from "../lib/biling-stack";
 import {PipelineStack} from "../lib/pipeline-stack";
 import {App} from "@aws-cdk/core";
