@@ -1,4 +1,4 @@
-import {Construct, Stack, StackProps} from "@aws-cdk/core";
+import {CfnOutput, Construct, Stack, StackProps} from "@aws-cdk/core";
 import {CfnParametersCode, Code, Function, Runtime} from "@aws-cdk/aws-lambda";
 import {HttpApi, HttpMethod} from "@aws-cdk/aws-apigatewayv2";
 import {HttpProxyIntegration, LambdaProxyIntegration} from "@aws-cdk/aws-apigatewayv2-integrations";
@@ -11,6 +11,7 @@ interface ServiceStackProps extends StackProps {
 export class ServiceStack extends Stack {
 
     public readonly serviceCode: CfnParametersCode
+    public readonly serviceEndpoint: CfnOutput
 
     constructor(scope: Construct, id: string, props?: ServiceStackProps) {
         super(scope, id, props);
@@ -32,6 +33,12 @@ export class ServiceStack extends Stack {
         })
         this.createOuterApiGateway(innerApiGateway);
 
+        this.serviceEndpoint = new CfnOutput(this, "ApiEndpointOutput", {
+            exportName: `ServiceEndpoint${props?.stageName}`,
+            value: innerApiGateway.apiEndpoint,
+            description: "Api endpoint"
+        })
+        
     }
 
     private createOuterApiGateway(innerApiGateway: HttpApi) {
@@ -40,7 +47,7 @@ export class ServiceStack extends Stack {
             path: "/",
             methods: [HttpMethod.GET],
             integration: new HttpProxyIntegration({
-                url: innerApiGateway.url || "",
+                url: innerApiGateway.apiEndpoint,
             })
         })
 
