@@ -1,5 +1,5 @@
 import {Construct, SecretValue, Stack, StackProps} from "@aws-cdk/core";
-import {Artifact, Pipeline} from "@aws-cdk/aws-codepipeline";
+import {Artifact, IStage, Pipeline} from "@aws-cdk/aws-codepipeline";
 import {
     CloudFormationCreateUpdateStackAction,
     CodeBuildAction,
@@ -7,6 +7,7 @@ import {
 } from "@aws-cdk/aws-codepipeline-actions";
 import {BuildSpec, LinuxBuildImage, PipelineProject} from "@aws-cdk/aws-codebuild";
 import {ServiceStack} from "./service-stack";
+import {BillingStack} from "./biling-stack";
 
 export class PipelineStack extends Stack {
 
@@ -96,9 +97,9 @@ export class PipelineStack extends Stack {
         })
     }
 
-    public addServiceStage(serviceStack: ServiceStack, stageName: string){
-        this.pipeline.addStage({
-            stageName:stageName,
+    public addServiceStage(serviceStack: ServiceStack, stageName: string): IStage {
+        return this.pipeline.addStage({
+            stageName: stageName,
             actions: [
                 new CloudFormationCreateUpdateStackAction({
                     actionName: 'Service_Update',
@@ -114,5 +115,16 @@ export class PipelineStack extends Stack {
                 })
             ]
         })
+    }
+
+    public addBillingStackToStage(bilingStack: BillingStack, stage: IStage) {
+        stage.addAction(new CloudFormationCreateUpdateStackAction({
+            actionName: 'Biling_Update',
+            stackName: bilingStack.stackName,
+            templatePath: this.cdkBuildOutput.atPath(
+                `{bilingStack.stackName}.template.json`
+            ),
+            adminPermissions: true
+        }))
     }
 }
