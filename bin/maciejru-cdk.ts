@@ -24,7 +24,6 @@ const lambdaStackTest = new ServiceStack(app, "LambdaStackAlpha", {
     stageName: "AlphaStage"
 })
 
-
 const lambdaStackProd = new ServiceStack(app, "LambdaStackProd", {
     stageName: "ProdStage"
 })
@@ -33,3 +32,8 @@ const alphaStage: IStage = pipelineStack.addServiceStage(lambdaStackTest, "Alpha
 const prodStage: IStage = pipelineStack.addServiceStage(lambdaStackProd, "Prod")
 
 pipelineStack.addBillingStackToStage(billingStack, prodStage)
+
+pipelineStack.addServiceIntegrationTestToStage(
+    alphaStage,
+    lambdaStackTest.serviceEndpoint.importValue
+)
