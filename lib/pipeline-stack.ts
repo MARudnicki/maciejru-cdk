@@ -12,6 +12,7 @@ import {BillingStack} from "./biling-stack";
 import {SnsTopic} from "@aws-cdk/aws-events-targets";
 import {Topic} from "@aws-cdk/aws-sns";
 import {EventField, RuleTargetInput} from "@aws-cdk/aws-events";
+import {EmailSubscription} from "@aws-cdk/aws-sns-subscriptions";
 
 export class PipelineStack extends Stack {
 
@@ -27,6 +28,10 @@ export class PipelineStack extends Stack {
         this.pipelineNotificationsTopic = new Topic(this, 'PipelineNotificationTopic', {
             topicName:'PipelineNotification'
         })
+
+        this.pipelineNotificationsTopic.addSubscription(
+            new EmailSubscription("maciej.adrian.rudnicki@gmail.com")
+        )
 
         this.pipeline = new Pipeline(this, 'Pipeline', {
             pipelineName: 'MyPipeline',
