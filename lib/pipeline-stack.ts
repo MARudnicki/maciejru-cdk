@@ -9,16 +9,24 @@ import {
 import {BuildEnvironmentVariableType, BuildSpec, LinuxBuildImage, PipelineProject} from "@aws-cdk/aws-codebuild";
 import {ServiceStack} from "./service-stack";
 import {BillingStack} from "./biling-stack";
+import {SnsTopic} from "@aws-cdk/aws-events-targets";
+import {Topic} from "@aws-cdk/aws-sns";
+import {EventField, RuleTargetInput} from "@aws-cdk/aws-events";
 
 export class PipelineStack extends Stack {
 
     private readonly pipeline: Pipeline;
     private readonly cdkBuildOutput: Artifact;
-    private readonly lambdaBuildOutput: Artifact;
+    private readonly serviceBuildOutput: Artifact;
     private readonly serviceSourceOutputArtifact: Artifact;
+    private readonly pipelineNotificationsTopic: Topic;
 
     constructor(scope: Construct, id: string, props: StackProps) {
         super(scope, id, props);
+
+        this.pipelineNotificationsTopic = new Topic(this, 'PipelineNotificationTopic', {
+            topicName:'PipelineNotification'
+        })
 
         this.pipeline = new Pipeline(this, 'Pipeline', {
             pipelineName: 'MyPipeline',
@@ -53,7 +61,7 @@ export class PipelineStack extends Stack {
         })
 
         this.cdkBuildOutput = new Artifact("CdkBuildOutput")
-        this.lambdaBuildOutput = new Artifact("LambdaBuildOutput")
+        this.serviceBuildOutput = new Artifact("LambdaBuildOutput")
 
         this.pipeline.addStage({
 
@@ -73,7 +81,7 @@ export class PipelineStack extends Stack {
                 new CodeBuildAction({
                     actionName: 'Service_Build',
                     input: this.serviceSourceOutputArtifact,
-                    outputs: [this.lambdaBuildOutput],
+                    outputs: [this.serviceBuildOutput],
                     project: new PipelineProject(this, 'LambdaBuildProject', {
                         environment: {
                             buildImage: LinuxBuildImage.STANDARD_5_0
@@ -109,17 +117,17 @@ export class PipelineStack extends Stack {
                     adminPermissions: true,
                     parameterOverrides: {
                         ...serviceStack.serviceCode.assign(
-                            this.lambdaBuildOutput.s3Location
+                            this.serviceBuildOutput.s3Location
                         )
                     },
-                    extraInputs: [this.lambdaBuildOutput]
+                    extraInputs: [this.serviceBuildOutput]
                 })
             ]
         })
     }
 
     public addServiceIntegrationTestToStage(stage: IStage, serviceEndpoint:string){
-        stage.addAction(new CodeBuildAction({
+        const integTestAction = new CodeBuildAction({
             actionName: "Integration_Test",
             input: this.serviceSourceOutputArtifact,
             project: new PipelineProject(this, "ServiceIntegrationTestProjects", {
@@ -136,17 +144,38 @@ export class PipelineStack extends Stack {
             },
             type: CodeBuildActionType.TEST,
             runOrder: 2
-        }))
+        })
+        stage.addAction(integTestAction)
+        integTestAction.onStateChange(
+            "IntegrationTestFailed",
+            new SnsTopic(this.pipelineNotificationsTopic, {
+                message: RuleTargetInput.fromText(
+                    `Integration Test Failed. See details here: ${EventField.fromPath(
+                        "$.detail.execution-result.external-execution-url"
+                    )}`
+                ),
+            }),
+            {
+                ruleName: "IntegrationTestFailed",
+                eventPattern: {
+                    detail: {
+                        state: ["FAILED"],
+                    },
+                },
+                description: "Integration test has failed",
+            }
+        );
     }
 
-    public addBillingStackToStage(bilingStack: BillingStack, stage: IStage) {
+    public addBillingStackToStage(billingStack: BillingStack, stage: IStage) {
         stage.addAction(new CloudFormationCreateUpdateStackAction({
             actionName: 'Biling_Update',
-            stackName: bilingStack.stackName,
+            stackName: billingStack.stackName,
             templatePath: this.cdkBuildOutput.atPath(
-                `{bilingStack.stackName}.template.json`
+                `${billingStack.stackName}.template.json`
             ),
             adminPermissions: true
         }))
     }
+
 }
