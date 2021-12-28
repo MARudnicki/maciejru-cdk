@@ -35,5 +35,5 @@ pipelineStack.addBillingStackToStage(billingStack, prodStage)
 
 pipelineStack.addServiceIntegrationTestToStage(
     alphaStage,
-    lambdaStackTest.serviceEndpoint.importValue
+    lambdaStackTest.serviceEndpointOutput.importValue
 )
